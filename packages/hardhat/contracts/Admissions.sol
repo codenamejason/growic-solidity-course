@@ -9,8 +9,11 @@ error NotOwner();
 
 contract Admissions is Ownable {
 
+  enum Status { Pending, Accepted, Rejected }
+
   struct Student {
     address studentID;
+    Status status;
   }
 
   mapping(address => Student) public students;
@@ -22,7 +25,7 @@ contract Admissions is Ownable {
   }
 
   function registerStudent(address studentID) public onlyOwner {
-    students[studentID] = Student(studentID);
+    students[studentID] = Student(studentID, Status.Pending);
   }
 
   function getStudentDetails(address studentID) public view returns (Student memory) {
