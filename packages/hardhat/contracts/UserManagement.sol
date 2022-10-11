@@ -40,8 +40,8 @@ contract UserManagement {
         return users[userAddress].balance;
     }
 
-    function setUserDetails(string calldata name, uint256 age, uint256 amount) public {
-        users[msg.sender] = User(name, age, amount);
+    function setUserDetails(string memory name, uint256 age) public {
+        users[msg.sender] = User(name, age, 0);
     }
     
     function getUserDetails(address userAddress) public view returns (User memory) {
