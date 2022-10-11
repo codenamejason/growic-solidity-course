@@ -10,41 +10,42 @@ error ZeroValue();
 error ZeroAddress();
 
 contract UserManagement {
-    struct User {
+    enum Status { Pending, Accepted, Rejected }
+    struct Student {
+        address studentId;
         string name;
         uint256 age;
+        Status status;
         uint256 balance;
     }
     
-    mapping(address => User) public users;
-    mapping(address => uint256) public balances;
+    mapping(address => Student) public students;
     
     function deposit(uint256 amount) public payable {
         if(amount == 0) revert ZeroValue();
         if(msg.sender == address(0)) revert ZeroAddress();
-        balances[msg.sender] += amount;
-        users[msg.sender].balance += amount;
+        students[msg.sender].balance += amount;
     }
     
     function withdraw(uint256 amount) public {
-        if(balances[msg.sender] < amount) revert InsufficientBalance(balances[msg.sender]);
-        balances[msg.sender] -= amount;
+        if(students[msg.sender].balance < amount) revert InsufficientBalance(students[msg.sender].balance);
+        students[msg.sender].balance -= amount;
         payable(msg.sender).transfer(amount);
     }
 
     function checkBalance() public view returns (uint256) {
-        return balances[msg.sender];
+        return students[msg.sender].balance;
     }
 
     function getUserBalance(address userAddress) public view returns (uint256) {
-        return users[userAddress].balance;
+        return students[userAddress].balance;
     }
 
     function setUserDetails(string memory name, uint256 age) public {
-        users[msg.sender] = User(name, age, 0);
+        students[msg.sender] = Student(msg.sender, name, age, Status.Pending, 0);
     }
     
-    function getUserDetails(address userAddress) public view returns (User memory) {
-        return users[userAddress];
+    function getUserDetails(address userAddress) public view returns (Student memory) {
+        return students[userAddress];
     }
 }
