@@ -28,6 +28,9 @@ contract UserManagement is Ownable {
 
     mapping(address => Student) public students;
 
+    event FundsDeposited(address sender, uint256 amount);
+    event StudentUpdated(address studentId);
+
     modifier hasDeposited(address studentId) {
         if (students[studentId].balance == 0) revert BalanceToSmall();
         _;
@@ -42,6 +45,8 @@ contract UserManagement is Ownable {
         if (amount == 0) revert AmountToSmall();
         if (msg.sender == address(0)) revert ZeroAddress();
         students[msg.sender].balance += amount;
+
+        emit FundsDeposited(msg.sender, amount);
     }
 
     function withdraw(uint256 amount) public onlyOwner {
@@ -55,31 +60,35 @@ contract UserManagement is Ownable {
         return students[msg.sender].balance;
     }
 
-    function getUserBalance(address userAddress) public view returns (uint256) {
-        return students[userAddress].balance;
+    function getStudentBalance(address studentId) public view returns (uint256) {
+        return students[studentId].balance;
     }
 
-    function setNewUserDetails(string memory name, uint256 age) public {
-        students[msg.sender] = Student(
-            msg.sender,
+    function setNewStudentDetails(address studentId, string memory name, uint256 age) public {
+        students[studentId] = Student(
+            studentId,
             name,
             age,
             Status.Pending,
             0
         );
+
+        emit StudentUpdated(studentId);
     }
 
-    function updateUserDetails(string memory name, uint256 age) public {
-        Student storage student = students[msg.sender];
+    function updateStudentDetails(address studentId, string memory name, uint256 age) public {
+        Student storage student = students[studentId];
         student.name = name;
         student.age = age;
+
+        emit StudentUpdated(studentId);
     }
 
-    function getUserDetails(address userAddress)
+    function getUserDetails(address studentId)
         public
         view
         returns (Student memory)
     {
-        return students[userAddress];
+        return students[studentId];
     }
 }
