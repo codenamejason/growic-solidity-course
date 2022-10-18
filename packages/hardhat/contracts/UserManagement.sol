@@ -38,13 +38,13 @@ contract UserManagement is Ownable {
 
     function addFund(uint256 amount) public hasDeposited(msg.sender) {
         if (amount < Fee) revert AmountToSmall();
-        students[msg.sender].balance += amount;
+        students[msg.sender].balance = students[msg.sender].balance + amount;
     }
 
     function deposit(uint256 amount) public payable {
         if (amount == 0) revert AmountToSmall();
         if (msg.sender == address(0)) revert ZeroAddress();
-        students[msg.sender].balance += amount;
+        students[msg.sender].balance = students[msg.sender].balance + amount;
 
         emit FundsDeposited(msg.sender, amount);
     }
@@ -52,7 +52,7 @@ contract UserManagement is Ownable {
     function withdraw(uint256 amount) public onlyOwner {
         if (students[msg.sender].balance < amount)
             revert InsufficientBalance(students[msg.sender].balance);
-        students[msg.sender].balance -= amount;
+        students[msg.sender].balance = students[msg.sender].balance - amount;
         payable(msg.sender).transfer(amount);
     }
 
@@ -60,23 +60,29 @@ contract UserManagement is Ownable {
         return students[msg.sender].balance;
     }
 
-    function getStudentBalance(address studentId) public view returns (uint256) {
+    function getStudentBalance(address studentId)
+        public
+        view
+        returns (uint256)
+    {
         return students[studentId].balance;
     }
 
-    function setNewStudentDetails(address studentId, string memory name, uint256 age) public {
-        students[studentId] = Student(
-            studentId,
-            name,
-            age,
-            Status.Pending,
-            0
-        );
+    function setNewStudentDetails(
+        address studentId,
+        string memory name,
+        uint256 age
+    ) public {
+        students[studentId] = Student(studentId, name, age, Status.Pending, 0);
 
         emit StudentUpdated(studentId);
     }
 
-    function updateStudentDetails(address studentId, string memory name, uint256 age) public {
+    function updateStudentDetails(
+        address studentId,
+        string memory name,
+        uint256 age
+    ) public {
         Student storage student = students[studentId];
         student.name = name;
         student.age = age;
@@ -90,5 +96,13 @@ contract UserManagement is Ownable {
         returns (Student memory)
     {
         return students[studentId];
+    }
+
+    receive() external payable {
+        deposit(msg.value);
+    }
+
+    fallback() external payable {
+        deposit(msg.value);
     }
 }
